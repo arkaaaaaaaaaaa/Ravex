@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ravex — Générateur de scripts Roblox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #12110f;
+            --surface: #1c1a17;
+            --surface-2: #25221e;
+            --border: rgba(255,255,255,0.08);
+            --orange: #f97316;
+            --orange-hot: #fb923c;
+            --orange-dim: rgba(249, 115, 22, 0.15);
+            --orange-glow: rgba(249, 115, 22, 0.35);
+            --text: #f5f2eb;
+            --muted: #9a958c;
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(18, 17, 15, 0.92);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .brand { display: flex; align-items: center; gap: 10px; }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: linear-gradient(145deg, var(--orange-hot), #ea580c);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #fff;
+            box-shadow: 0 4px 16px var(--orange-glow);
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-text span {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+            display: grid;
+            gap: 20px;
+        }
+
+        @media (min-width: 860px) {
+            .main {
+                grid-template-columns: 1.1fr 0.9fr;
+                align-items: start;
+            }
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .panel-head h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .viewport {
+            position: relative;
+            min-height: 340px;
+            background:
+                radial-gradient(ellipse at 50% 80%, rgba(249,115,22,0.08), transparent 55%),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+                #161411;
+            background-size: auto, 28px 28px, 28px 28px, auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .viewport.has-image { cursor: default; }
+
+        .viewport-empty {
+            text-align: center;
+            padding: 24px;
+            color: var(--muted);
+        }
+
+        .viewport-empty .icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            border-radius: 16px;
+            background: var(--orange-dim);
+            border: 1px solid rgba(249,115,22,0.25);
+            display: grid;
+            place-items: center;
+            font-size: 1.8rem;
+        }
+
+        .viewport-empty strong {
+            display: block;
+            color: var(--text);
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+        }
+
+        .viewport img {
+            max-width: 88%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: none;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+        }
+
+        .viewport.has-image img { display: block; }
+        .viewport.has-image .viewport-empty { display: none; }
+
+        #fileInput { display: none; }
+
+        .model-card {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            max-width: min(280px, calc(100% - 32px));
+            background: rgba(28, 26, 23, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .viewport.has-image .model-card { display: block; }
+
+        .model-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .model-card p {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .model-card .tag {
+            margin-top: 8px;
+            font-size: 0.72rem;
+            color: var(--orange);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            border-top: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+
+        .type-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .type-row label {
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--muted);
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            transition: 0.2s;
+        }
+
+        .type-row input { display: none; }
+
+        .type-row label:has(input:checked) {
+            background: var(--orange);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 14px var(--orange-glow);
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(145deg, var(--orange-hot), var(--orange));
+            color: #fff;
+            box-shadow: 0 4px 16px var(--orange-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn-ghost {
+            background: rgba(255,255,255,0.05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover:not(:disabled) {
+            background: rgba(255,255,255,0.09);
+            border-color: rgba(249,115,22,0.35);
+        }
+
+        .btn-ghost:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* Export buttons — theme orange */
+        .export-row {
+            display: none;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px 18px;
+            border-top: 1px solid var(--border);
+            background: rgba(249, 115, 22, 0.06);
+        }
+
+        .export-row.visible {
+            display: flex;
+        }
+
+        .btn-rbxmx {
+            background: linear-gradient(145deg, var(--orange-hot), #ea580c);
+            color: #fff;
+            box-shadow: 0 4px 14px var(--orange-glow);
+            border: none;
+        }
+
+        .btn-rbxmx:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-copy {
+            background: rgba(249, 115, 22, 0.12);
+            color: var(--orange-hot);
+            border: 1px solid rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-copy:hover {
+            background: rgba(249, 115, 22, 0.22);
+            border-color: var(--orange);
+        }
+
+        .script-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 420px;
+        }
+
+        .script-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .script-placeholder {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .script-placeholder strong {
+            color: var(--text);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        pre#scriptOutput {
+            display: none;
+            flex: 1;
+            margin: 0;
+            padding: 18px;
+            background: #0e0d0b;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: #e8e4dc;
+            overflow: auto;
+            max-height: 480px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        pre#scriptOutput.visible { display: block; }
+
+        pre#scriptOutput::-webkit-scrollbar { width: 8px; }
+        pre#scriptOutput::-webkit-scrollbar-thumb {
+            background: #3d342c;
+            border-radius: 4px;
+        }
+
+        .status-bar {
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--orange);
+            background: var(--surface-2);
+            min-height: 38px;
+        }
+
+        .loading-inline {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            padding: 24px;
+            justify-content: center;
+        }
+
+        .loading-inline.visible { display: flex; }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(249,115,22,0.2);
+            border-top-color: var(--orange);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer {
+            text-align: center;
+            padding: 8px 20px 28px;
+            color: #5c564e;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-mark">R</div>
+            <div class="brand-text">
+                <strong>Ravex</strong>
+                <span>Générateur de scripts Roblox</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="panel">
+            <div class="viewport" id="viewport">
+                <div class="model-card" id="modelCard">
+                    <h3 id="modelTitle">Mon modèle</h3>
+                    <p id="modelDesc">Image importée — prêt à générer</p>
+                    <div class="tag" id="modelTag">Image · Studio</div>
+                </div>
+                <div class="viewport-empty">
+                    <div class="icon">📷</div>
+                    <strong>Importe une image</strong>
+                    <p>Glisse-dépose ou clique pour choisir</p>
+                </div>
+                <img id="preview" alt="Aperçu">
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <div class="controls">
+                <div class="type-row">
+                    <label><input type="radio" name="scriptType" value="object" checked> Objet</label>
+                    <label><input type="radio" name="scriptType" value="tool"> Outil</label>
+                    <label><input type="radio" name="scriptType" value="npc"> NPC</label>
+                    <label><input type="radio" name="scriptType" value="ui"> UI</label>
+                    <label><input type="radio" name="scriptType" value="vehicle"> Véhicule</label>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="generateBtn" disabled>⚡ Générer le script</button>
+                    <button class="btn btn-ghost" id="clearBtn" disabled>Effacer</button>
+                </div>
+            </div>
+
+            <!-- Boutons export : apparaissent après génération -->
+            <div class="export-row" id="exportRow">
+                <button class="btn btn-rbxmx" id="downloadRbxmxBtn">↓ .rbxmx</button>
+                <button class="btn btn-copy" id="copyBtn">⧉ Copier le script</button>
+            </div>
+        </div>
+
+        <div class="panel script-panel">
+            <div class="panel-head">
+                <h2>Script Lua</h2>
+            </div>
+            <div class="script-body">
+                <div class="script-placeholder" id="placeholder">
+                    <div>
+                        <strong>Aucun script pour l’instant</strong>
+                        Importe une image puis génère<br>pour obtenir ton code Luau
+                    </div>
+                </div>
+                <div class="loading-inline" id="loading">
+                    <div class="spinner"></div>
+                    Génération en cours…
+                </div>
+                <pre id="scriptOutput"></pre>
+            </div>
+            <div class="status-bar" id="status"></div>
+        </div>
+    </div>
+
+    <footer>Ravex · Scripts Luau &amp; modèles .rbxmx · Aucune clé API</footer>
+
+    <script>
+        const viewport = document.getElementById('viewport');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const generateBtn = document.getElementById('generateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadRbxmxBtn = document.getElementById('downloadRbxmxBtn');
+        const exportRow = document.getElementById('exportRow');
+        const scriptOutput = document.getElementById('scriptOutput');
+        const placeholder = document.getElementById('placeholder');
+        const loading = document.getElementById('loading');
+        const status = document.getElementById('status');
+        const modelTitle = document.getElementById('modelTitle');
+        const modelDesc = document.getElementById('modelDesc');
+        const modelTag = document.getElementById('modelTag');
+
+        let currentName = '';
+        let currentScript = '';
+        let currentType = 'object';
+
+        viewport.addEventListener('click', () => {
+            if (!viewport.classList.contains('has-image')) fileInput.click();
+        });
+        viewport.addEventListener('dragover', (e) => e.preventDefault());
+        viewport.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Choisis une image.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentName = file.name.replace(/\.[^.]+$/, '') || 'MonModele';
+                preview.src = e.target.result;
+                viewport.classList.add('has-image');
+                modelTitle.textContent = currentName;
+                modelDesc.textContent = 'Image importée — prêt à générer';
+                modelTag.textContent = typeLabel(getType()).toUpperCase() + ' · STUDIO';
+                generateBtn.disabled = false;
+                clearBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        document.querySelectorAll('input[name="scriptType"]').forEach(r => {
+            r.addEventListener('change', () => {
+                if (viewport.classList.contains('has-image')) {
+                    modelTag.textContent = typeLabel(getType()).toUpperCase() + ' · STUDIO';
+                }
+            });
+        });
+
+        function getType() {
+            return document.querySelector('input[name="scriptType"]:checked').value;
+        }
+
+        clearBtn.addEventListener('click', () => {
+            currentName = '';
+            currentScript = '';
+            preview.src = '';
+            viewport.classList.remove('has-image');
+            generateBtn.disabled = true;
+            clearBtn.disabled = true;
+            exportRow.classList.remove('visible');
+            scriptOutput.textContent = '';
+            scriptOutput.classList.remove('visible');
+            placeholder.style.display = 'flex';
+            status.textContent = '';
+            fileInput.value = '';
+        });
+
+        generateBtn.addEventListener('click', async () => {
+            generateBtn.disabled = true;
+            placeholder.style.display = 'none';
+            scriptOutput.classList.remove('visible');
+            exportRow.classList.remove('visible');
+            loading.classList.add('visible');
+            status.textContent = '';
+
+            await new Promise(r => setTimeout(r, 550));
+
+            currentType = getType();
+            const safe = currentName.replace(/[^a-zA-Z0-9_]/g, '_') || 'Generated';
+            currentScript = buildScript(currentType, safe, currentName);
+
+            scriptOutput.textContent = currentScript;
+            scriptOutput.classList.add('visible');
+            loading.classList.remove('visible');
+            exportRow.classList.add('visible');
+            generateBtn.disabled = false;
+            status.textContent = '✓ Script prêt — télécharge le .rbxmx ou copie le code';
+        });
+
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(currentScript).then(() => {
+                const t = copyBtn.innerHTML;
+                copyBtn.innerHTML = '✓ Copié !';
+                setTimeout(() => copyBtn.innerHTML = t, 1600);
+            });
+        });
+
+        downloadRbxmxBtn.addEventListener('click', () => {
+            const safe = currentName.replace(/[^a-zA-Z0-9_]/g, '_') || 'Model';
+            const xml = buildRbxmx(currentType, safe, currentScript);
+            const blob = new Blob([xml], { type: 'application/xml' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = safe + '.rbxmx';
+            a.click();
+            URL.revokeObjectURL(a.href);
+
+            const t = downloadRbxmxBtn.innerHTML;
+            downloadRbxmxBtn.innerHTML = '✓ Téléchargé';
+            setTimeout(() => downloadRbxmxBtn.innerHTML = t, 1600);
+        });
+
+        function typeLabel(t) {
+            return { object: 'Objet', tool: 'Outil', npc: 'NPC', ui: 'UI', vehicle: 'Véhicule' }[t] || t;
+        }
+
+        function escapeXml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Fichier .rbxmx basique (Model + Script) importable dans Studio
+        function buildRbxmx(type, name, luaSource) {
+            const scriptClass = (type === 'ui') ? 'LocalScript' : 'Script';
+            return `<?xml version="1.0" encoding="utf-8"?>
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Item class="Model" referent="RBX0">
+		<Properties>
+			<string name="Name">${escapeXml(name)}</string>
+		</Properties>
+		<Item class="Part" referent="RBX1">
+			<Properties>
+				<string name="Name">Main</string>
+				<CoordinateFrame name="CFrame">
+					<X>0</X><Y>5</Y><Z>0</Z>
+					<R00>1</R00><R01>0</R01><R02>0</R02>
+					<R10>0</R10><R11>1</R11><R12>0</R12>
+					<R20>0</R20><R21>0</R21><R22>1</R22>
+				</CoordinateFrame>
+				<bool name="Anchored">true</bool>
+				<Vector3 name="size">
+					<X>4</X><Y>4</Y><Z>4</Z>
+				</Vector3>
+				<token name="Material">256</token>
+				<Color3uint8 name="Color3uint8">4280030463</Color3uint8>
+				<float name="Transparency">0</float>
+			</Properties>
+		</Item>
+		<Item class="${scriptClass}" referent="RBX2">
+			<Properties>
+				<string name="Name">${escapeXml(name)}Script</string>
+				<ProtectedString name="Source"><![CDATA[${luaSource}]]></ProtectedString>
+				<bool name="Enabled">true</bool>
+			</Properties>
+		</Item>
+	</Item>
+</roblox>`;
+        }
+
+        function buildScript(type, name, original) {
+            const h = `-- Ravex · ${original}
+-- Type: ${typeLabel(type)}
+-- Colle dans Roblox Studio (Script ou LocalScript)
+`;
+
+            const map = {
+object: `${h}
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local model = Instance.new("Model")
+model.Name = "${name}"
+
+local part = Instance.new("Part")
+part.Name = "Main"
+part.Size = Vector3.new(4, 4, 4)
+part.Position = Vector3.new(0, 5, 0)
+part.Anchored = true
+part.BrickColor = BrickColor.new("Bright orange")
+part.Material = Enum.Material.Neon
+part.Parent = model
+
+local tween = TweenService:Create(
+	part,
+	TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+	{ Orientation = Vector3.new(0, 360, 0) }
+)
+tween:Play()
+
+local baseY = part.Position.Y
+RunService.Heartbeat:Connect(function()
+	part.Position = Vector3.new(part.Position.X, baseY + math.sin(tick() * 2) * 0.35, part.Position.Z)
+end)
+
+model.Parent = workspace
+print("✅ ${name} créé")
+`,
+
+tool: `${h}
+local tool = Instance.new("Tool")
+tool.Name = "${name}"
+tool.RequiresHandle = true
+tool.CanBeDropped = true
+
+local handle = Instance.new("Part")
+handle.Name = "Handle"
+handle.Size = Vector3.new(1, 1, 3)
+handle.BrickColor = BrickColor.new("Bright orange")
+handle.Material = Enum.Material.SmoothPlastic
+handle.Parent = tool
+
+tool.Activated:Connect(function()
+	print("🛠️ ${name} utilisé")
+end)
+
+local player = game:GetService("Players").LocalPlayer
+if player then
+	tool.Parent = player:WaitForChild("Backpack")
+else
+	tool.Parent = game:GetService("StarterPack")
+end
+`,
+
+npc: `${h}
+local model = Instance.new("Model")
+model.Name = "${name}"
+
+local root = Instance.new("Part")
+root.Name = "HumanoidRootPart"
+root.Size = Vector3.new(2, 2, 1)
+root.Position = Vector3.new(0, 3, 0)
+root.BrickColor = BrickColor.new("Bright orange")
+root.Parent = model
+
+local humanoid = Instance.new("Humanoid")
+humanoid.MaxHealth = 100
+humanoid.Health = 100
+humanoid.WalkSpeed = 12
+humanoid.Parent = model
+
+model.PrimaryPart = root
+
+task.spawn(function()
+	while model.Parent do
+		humanoid:MoveTo(Vector3.new(math.random(-20, 20), 0, math.random(-20, 20)))
+		task.wait(5)
+	end
+end)
+
+model.Parent = workspace
+print("✅ NPC ${name} spawn")
+`,
+
+ui: `${h}
+-- À placer dans un LocalScript
+local player = game:GetService("Players").LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "${name}UI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(320, 180)
+frame.Position = UDim2.fromScale(0.5, 0.5) - UDim2.fromOffset(160, 90)
+frame.BackgroundColor3 = Color3.fromRGB(28, 26, 23)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -20, 0, 40)
+title.Position = UDim2.fromOffset(10, 10)
+title.BackgroundTransparency = 1
+title.Text = "${original}"
+title.TextColor3 = Color3.fromRGB(249, 115, 22)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
+title.Parent = frame
+
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.fromOffset(160, 44)
+btn.Position = UDim2.new(0.5, -80, 1, -60)
+btn.BackgroundColor3 = Color3.fromRGB(249, 115, 22)
+btn.Text = "Action"
+btn.TextColor3 = Color3.new(1, 1, 1)
+btn.Font = Enum.Font.GothamBold
+btn.TextSize = 18
+btn.Parent = frame
+
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+btn.MouseButton1Click:Connect(function()
+	print("UI ${name} cliqué")
+end)
+`,
+
+vehicle: `${h}
+local model = Instance.new("Model")
+model.Name = "${name}"
+
+local body = Instance.new("Part")
+body.Name = "Body"
+body.Size = Vector3.new(6, 2, 10)
+body.Position = Vector3.new(0, 3, 0)
+body.BrickColor = BrickColor.new("Bright orange")
+body.Parent = model
+
+local seat = Instance.new("VehicleSeat")
+seat.Name = "DriveSeat"
+seat.Size = Vector3.new(2, 1, 2)
+seat.Position = body.Position + Vector3.new(0, 1.5, 1)
+seat.Parent = model
+
+local weld = Instance.new("WeldConstraint")
+weld.Part0 = body
+weld.Part1 = seat
+weld.Parent = body
+
+local function wheel(offset)
+	local w = Instance.new("Part")
+	w.Name = "Wheel"
+	w.Shape = Enum.PartType.Cylinder
+	w.Size = Vector3.new(1, 2.5, 2.5)
+	w.Position = body.Position + offset
+	w.BrickColor = BrickColor.new("Really black")
+	w.Parent = model
+	local c = Instance.new("WeldConstraint")
+	c.Part0 = body
+	c.Part1 = w
+	c.Parent = body
+end
+
+wheel(Vector3.new(-2.5, -1, 3))
+wheel(Vector3.new(2.5, -1, 3))
+wheel(Vector3.new(-2.5, -1, -3))
+wheel(Vector3.new(2.5, -1, -3))
+
+model.PrimaryPart = body
+model.Parent = workspace
+print("✅ Véhicule ${name} créé")
+`
+            };
+
+            return map[type] || map.object;
+        }
+    </script>
+</body>
+</html>
