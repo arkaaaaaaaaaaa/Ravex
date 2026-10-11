@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ravex — Générateur de scripts Roblox</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070a;--panel:#101014;--panel2:#16161c;--line:rgba(255,255,255,.07);
+  --o:#ff6b1a;--o2:#ff8c42;--osoft:rgba(255,107,26,.12);--oline:rgba(255,107,26,.35);--oglow:rgba(255,107,26,.3);
+  --text:#fafafa;--muted:#a1a1aa;--dim:#71717a;--ok:#22c55e;
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -15%,rgba(255,107,26,.16),transparent 55%),
+  radial-gradient(ellipse 40% 30% at 100% 40%,rgba(99,102,241,.06),transparent 45%)}
+
+/* NAV */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;max-width:1200px;margin:0 auto;
+}
+.nav-inner{
+  position:fixed;top:0;left:0;right:0;z-index:99;
+  height:64px;background:rgba(7,7,10,.85);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);
+}
+.nav{height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;position:relative;z-index:101}
+.mark{
+  width:32px;height:32px;border-radius:9px;
+  background:linear-gradient(135deg,var(--o2),var(--o));
+  display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;
+  box-shadow:0 4px 16px var(--oglow);
+}
+.brand b{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.brand b span{background:linear-gradient(90deg,var(--o2),var(--o));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;align-items:center;gap:6px;position:relative;z-index:101}
+.nav-links a{
+  text-decoration:none;color:var(--muted);font-size:13.5px;font-weight:500;
+  padding:8px 14px;border-radius:9px;transition:.15s;cursor:pointer;
+}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.nav-links a.btn-nav{
+  background:linear-gradient(135deg,var(--o2),var(--o));color:#fff;font-weight:600;
+  box-shadow:0 4px 16px var(--oglow);margin-left:6px;
+}
+.nav-links a.btn-nav:hover{filter:brightness(1.06);color:#fff}
+
+/* HERO */
+#accueil{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:100px 24px 80px}
+.hero{max-width:900px;margin:0 auto;text-align:center}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  color:var(--o2);background:var(--osoft);border:1px solid var(--oline);
+  padding:6px 14px;border-radius:999px;margin-bottom:24px;
+}
+.hero h1{
+  font-size:clamp(2.4rem,5.5vw,3.6rem);font-weight:800;letter-spacing:-.04em;
+  line-height:1.08;margin-bottom:18px;
+}
+.hero h1 .grad{
+  background:linear-gradient(135deg,#fff 20%,var(--o2) 60%,var(--o));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero .sub{font-size:1.15rem;color:var(--muted);max-width:540px;margin:0 auto 36px}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:12px;
+  font-weight:600;font-size:15px;text-decoration:none;border:none;cursor:pointer;
+  font-family:inherit;transition:.15s;
+}
+.btn-p{background:linear-gradient(135deg,var(--o2),var(--o));color:#fff;box-shadow:0 6px 24px var(--oglow)}
+.btn-p:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.btn-g{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--line)}
+.btn-g:hover{background:rgba(255,255,255,.08)}
+.btn-discord{background:linear-gradient(135deg,#5865F2,#4752C4);color:#fff;box-shadow:0 6px 20px rgba(88,101,242,.35)}
+.btn-discord:hover{transform:translateY(-2px);filter:brightness(1.06)}
+
+.features{
+  position:relative;z-index:1;max-width:1000px;margin:0 auto;
+  padding:20px 24px 100px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+}
+@media(max-width:800px){.features{grid-template-columns:1fr}}
+.fcard{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;transition:.2s;
+}
+.fcard:hover{border-color:var(--oline);transform:translateY(-3px)}
+.fcard .ico{
+  width:44px;height:44px;border-radius:12px;background:var(--osoft);
+  display:grid;place-items:center;font-size:20px;margin-bottom:14px;
+}
+.fcard h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.fcard p{font-size:13px;color:var(--muted)}
+
+/* GENERATOR SECTION */
+#generateur{position:relative;z-index:1;padding:80px 16px 100px;border-top:1px solid var(--line)}
+.sec-head{text-align:center;margin-bottom:36px}
+.sec-head h2{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;letter-spacing:-.03em;margin-bottom:8px}
+.sec-head p{color:var(--muted);font-size:1.05rem}
+
+.studio{
+  max-width:1120px;margin:0 auto;display:grid;
+  grid-template-columns:280px 1fr 1fr;gap:0;
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+@media(max-width:960px){.studio{grid-template-columns:1fr}}
+.scol{display:flex;flex-direction:column;border-right:1px solid var(--line);min-height:0}
+.scol:last-child{border-right:none}
+.sl{padding:11px 14px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);background:var(--panel2);display:flex;justify-content:space-between}
+.side{padding:12px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;max-height:520px}
+.f-lab{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.inp,.ta{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--text);font:500 12.5px var(--font);outline:none}
+.inp{height:34px}.ta{min-height:50px;resize:vertical}
+.inp:focus,.ta:focus{border-color:var(--o)}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg label{cursor:pointer;height:27px;padding:0 9px;border-radius:7px;display:inline-flex;align-items:center;font-size:11px;font-weight:600;color:var(--muted);background:var(--bg);border:1px solid var(--line)}
+.seg input{display:none}
+.seg label:has(input:checked){color:#fff;background:var(--o);border-color:transparent}
+.checks label{cursor:pointer;display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;font-size:11.5px;color:var(--muted)}
+.checks input{accent-color:var(--o);width:12px;height:12px}
+.checks label:has(input:checked){color:var(--text)}
+.btn-sm{height:34px;padding:0 12px;border-radius:8px;border:none;font:600 12px var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+.btn-gen{background:linear-gradient(180deg,var(--o2),var(--o));color:#fff;width:100%;box-shadow:0 4px 12px var(--oglow)}
+.btn-out{background:var(--osoft);color:var(--o2);border:1px solid var(--oline)}
+.btn-solid{background:var(--o);color:#fff}
+.kit{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.kit button{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--muted);font:600 10.5px var(--font);cursor:pointer;text-align:left}
+.kit button span{display:block;font-size:9.5px;color:var(--dim);margin-top:2px;font-weight:500}
+.kit button:hover{border-color:var(--oline);color:var(--text)}
+.vp{flex:1;min-height:200px;background:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px),#0c0c0f;background-size:16px 16px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.vp.has{cursor:default}
+.vp-e{text-align:center;color:var(--dim);font-size:12px}
+.vp-e strong{display:block;color:var(--muted);margin-bottom:4px}
+.vp img{max-width:75%;max-height:170px;object-fit:contain;display:none}
+.vp.has img{display:block}.vp.has .vp-e{display:none}
+#file{display:none}
+.export{display:none;gap:6px;flex-wrap:wrap;padding:10px;border-top:1px solid var(--line)}
+.export.on{display:flex}
+.code{flex:1;display:flex;flex-direction:column;min-height:0;background:#0a0a0c}
+.ctb{height:34px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:var(--panel2)}
+.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%}
+.dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+.cm{font:500 10px var(--mono);color:var(--dim)}
+.cb{flex:1;position:relative;min-height:240px}
+.ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--dim);font-size:12px}
+.ph strong{display:block;color:var(--muted);margin-bottom:4px}
+.ld{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:8px;background:rgba(7,7,10,.8);color:var(--muted);font-size:12px}
+.ld.on{display:flex}
+.sp{width:14px;height:14px;border:2px solid rgba(255,107,26,.2);border-top-color:var(--o);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+pre#out{display:none;margin:0;padding:12px;height:100%;overflow:auto;font:400 11px/1.55 var(--mono);color:#e4e4e7;white-space:pre-wrap;word-break:break-word}
+pre#out.on{display:block}
+.st{height:28px;padding:0 12px;display:flex;align-items:center;font-size:11px;color:var(--dim);border-top:1px solid var(--line);background:var(--panel2)}
+.st.ok{color:var(--ok)}
+
+/* SUPPORT */
+#support{position:relative;z-index:1;padding:90px 24px 100px;border-top:1px solid var(--line);text-align:center}
+#support h2{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:800;letter-spacing:-.03em;margin-bottom:10px}
+#support .sub{color:var(--muted);margin-bottom:36px;font-size:1.05rem}
+.discord-box{
+  max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:20px;padding:40px 28px;transition:.2s;
+}
+.discord-box:hover{border-color:rgba(88,101,242,.4)}
+.d-ico{
+  width:68px;height:68px;margin:0 auto 16px;border-radius:18px;
+  background:linear-gradient(135deg,#5865F2,#4752C4);
+  display:grid;place-items:center;font-size:30px;
+  box-shadow:0 8px 28px rgba(88,101,242,.4);
+}
+.discord-box h3{font-size:1.25rem;font-weight:700;margin-bottom:8px}
+.discord-box p{color:var(--muted);font-size:14px;margin-bottom:20px}
+
+footer{position:relative;z-index:1;text-align:center;padding:28px;color:#52525b;font-size:13px;border-top:1px solid var(--line)}
+footer a{color:var(--o2);text-decoration:none}
+
+@media(max-width:700px){
+  .nav-links a:not(.btn-nav){display:none}
+  .nav{padding:14px 16px}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="nav-inner"></div>
+<nav class="nav">
+  <a class="brand" href="#accueil"><div class="mark">R</div><b>Ra<span>vex</span></b></a>
+  <div class="nav-links">
+    <a href="#accueil">Accueil</a>
+    <a href="#generateur">Générateur</a>
+    <a href="#support">Support</a>
+    <a class="btn-nav" href="#generateur">Créer un script</a>
+  </div>
+</nav>
+
+<!-- ACCUEIL -->
+<section id="accueil">
+  <div class="hero">
+    <div class="badge">✦ Scripts Luau pour Roblox Studio</div>
+    <h1>Génère des scripts<br><span class="grad">pro en un clic</span></h1>
+    <p class="sub">Objets, outils, NPC, UI, véhicules, pets, armes… Configure, génère, exporte en .lua ou .rbxmx. 100% local.</p>
+    <div class="hero-btns">
+      <a class="btn btn-p" href="#generateur">Ouvrir le générateur →</a>
+      <a class="btn btn-discord" href="#support">Support Discord</a>
+    </div>
+  </div>
+  <div class="features">
+    <div class="fcard"><div class="ico">⚡</div><h3>8 types de scripts</h3><p>Objet, outil, NPC, UI, véhicule, pet, arme, porte — Basic à Insane.</p></div>
+    <div class="fcard"><div class="ico">🎛️</div><h3>Modules avancés</h3><p>ProximityPrompt, particules, dégâts, leaderstats, pathfinding…</p></div>
+    <div class="fcard"><div class="ico">📦</div><h3>Export Studio</h3><p>Télécharge .rbxmx / .lua ou copie le code, prêt pour Studio.</p></div>
+  </div>
+</section>
+
+<!-- GENERATEUR -->
+<section id="generateur">
+  <div class="sec-head">
+    <h2>Générateur de scripts</h2>
+    <p>Configure et génère ton code Luau</p>
+  </div>
+  <div class="studio">
+    <div class="scol">
+      <div class="sl"><span>Config</span></div>
+      <div class="side">
+        <div><div class="f-lab">Nom</div><input class="inp" id="nameIn" placeholder="RenardCuivre" maxlength="48"></div>
+        <div><div class="f-lab">Description</div><textarea class="ta" id="descIn" placeholder="Optionnel…"></textarea></div>
+        <div><div class="f-lab">Type</div>
+          <div class="seg">
+            <label><input type="radio" name="t" value="object" checked> Objet</label>
+            <label><input type="radio" name="t" value="tool"> Outil</label>
+            <label><input type="radio" name="t" value="npc"> NPC</label>
+            <label><input type="radio" name="t" value="ui"> UI</label>
+            <label><input type="radio" name="t" value="vehicle"> Véhicule</label>
+            <label><input type="radio" name="t" value="pet"> Pet</label>
+            <label><input type="radio" name="t" value="weapon"> Arme</label>
+            <label><input type="radio" name="t" value="door"> Porte</label>
+          </div>
+        </div>
+        <div><div class="f-lab">Niveau</div>
+          <div class="seg">
+            <label><input type="radio" name="lvl" value="basic"> Basic</label>
+            <label><input type="radio" name="lvl" value="pro" checked> Pro</label>
+            <label><input type="radio" name="lvl" value="insane"> Insane</label>
+          </div>
+        </div>
+        <div><div class="f-lab">Couleur</div>
+          <div class="seg">
+            <label><input type="radio" name="col" value="orange" checked> Orange</label>
+            <label><input type="radio" name="col" value="blue"> Bleu</label>
+            <label><input type="radio" name="col" value="green"> Vert</label>
+            <label><input type="radio" name="col" value="red"> Rouge</label>
+            <label><input type="radio" name="col" value="purple"> Violet</label>
+          </div>
+        </div>
+        <div><div class="f-lab">Taille <span id="sizeVal" style="color:var(--o2);font-family:var(--mono)">4</span></div>
+          <input type="range" id="sizeR" min="1" max="12" step="0.5" value="4" style="width:100%"></div>
+        <div><div class="f-lab">Modules</div>
+          <div class="checks">
+            <label><input type="checkbox" id="mNeon" checked> Neon</label>
+            <label><input type="checkbox" id="mAnim" checked> Animation</label>
+            <label><input type="checkbox" id="mFX"> Particules</label>
+            <label><input type="checkbox" id="mPrompt"> ProximityPrompt</label>
+            <label><input type="checkbox" id="mClick"> ClickDetector</label>
+            <label><input type="checkbox" id="mDamage"> Dégâts</label>
+            <label><input type="checkbox" id="mData"> Leaderstats</label>
+          </div>
+        </div>
+        <div><div class="f-lab">Kits</div>
+          <div class="kit">
+            <button type="button" data-kit="obby"><b>Obby</b><span>checkpoints</span></button>
+            <button type="button" data-kit="tycoon"><b>Tycoon</b><span>cash</span></button>
+            <button type="button" data-kit="pvp"><b>PvP</b><span>épée</span></button>
+            <button type="button" data-kit="shop"><b>Shop</b><span>UI</span></button>
+          </div>
+        </div>
+        <button class="btn-sm btn-gen" id="gen">⚡ Générer le script</button>
+      </div>
+    </div>
+    <div class="scol">
+      <div class="sl"><span>Preview</span></div>
+      <div class="vp" id="vp">
+        <div class="vp-e"><strong>Image optionnelle</strong>clic ou drag & drop</div>
+        <img id="prev" alt=""><input type="file" id="file" accept="image/*">
+      </div>
+      <div class="export" id="export">
+        <button class="btn-sm btn-solid" id="dlRbxmx">↓ .rbxmx</button>
+        <button class="btn-sm btn-out" id="dlLua">↓ .lua</button>
+        <button class="btn-sm btn-out" id="copy">Copy</button>
+      </div>
+    </div>
+    <div class="scol">
+      <div class="sl"><span>Output</span><span id="lines" style="text-transform:none;letter-spacing:0;font-weight:500"></span></div>
+      <div class="code">
+        <div class="ctb"><div class="dots"><i></i><i></i><i></i></div><div class="cm" id="codeMeta">luau · idle</div></div>
+        <div class="cb">
+          <div class="ph" id="ph"><div><strong>En attente</strong>Génère pour voir le script</div></div>
+          <div class="ld" id="ld"><div class="sp"></div> Génération…</div>
+          <pre id="out"></pre>
+        </div>
+        <div class="st" id="bar">Ravex</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUPPORT -->
+<section id="support">
+  <h2>Support</h2>
+  <p class="sub">Besoin d’aide ou d’idées ? Rejoins le Discord.</p>
+  <div class="discord-box">
+    <div class="d-ico">💬</div>
+    <h3>Serveur Discord</h3>
+    <p>Support, suggestions, partage de scripts et communauté Roblox Studio.</p>
+    <a class="btn btn-discord" href="https://discord.gg/D8ZqjH2Nb" target="_blank" rel="noopener">Rejoindre Discord →</a>
+  </div>
+</section>
+
+<footer>© 2026 Ravex · <a href="https://discord.gg/D8ZqjH2Nb" target="_blank" rel="noopener">Discord</a></footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const vp=$('#vp'),file=$('#file'),prev=$('#prev'),gen=$('#gen');
+const copy=$('#copy'),dlLua=$('#dlLua'),dlRbxmx=$('#dlRbxmx'),exp=$('#export');
+const out=$('#out'),ph=$('#ph'),ld=$('#ld'),bar=$('#bar');
+const nameIn=$('#nameIn'),descIn=$('#descIn'),sizeR=$('#sizeR'),sizeVal=$('#sizeVal');
+const lines=$('#lines'),codeMeta=$('#codeMeta');
+let fileName='',script='';
+sizeR.oninput=()=>sizeVal.textContent=sizeR.value;
+vp.onclick=()=>{if(!vp.classList.contains('has'))file.click()};
+vp.ondragover=e=>e.preventDefault();
+vp.ondrop=e=>{e.preventDefault();if(e.dataTransfer.files[0])handle(e.dataTransfer.files[0])};
+file.onchange=e=>{if(e.target.files[0])handle(e.target.files[0])};
+function handle(f){if(!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=e=>{fileName=f.name.replace(/\.[^.]+$/,'')||'Model';if(!nameIn.value)nameIn.value=fileName;prev.src=e.target.result;vp.classList.add('has')};r.readAsDataURL(f)}
+function getType(){return $('input[name=t]:checked').value}
+function getLvl(){return $('input[name=lvl]:checked').value}
+function getCol(){return $('input[name=col]:checked').value}
+function typeLabel(t){return{object:'Objet',tool:'Outil',npc:'NPC',ui:'UI',vehicle:'Véhicule',pet:'Pet',weapon:'Arme',door:'Porte'}[t]||t}
+function setType(v){const el=$(`input[name=t][value="${v}"]`);if(el)el.checked=true}
+$$('[data-kit]').forEach(b=>b.onclick=()=>{const k=b.dataset.kit;
+  if(k==='obby'){setType('object');$('#mDamage').checked=true;$('#mPrompt').checked=true;nameIn.value='ObbyCheckpoint'}
+  if(k==='tycoon'){setType('object');$('#mData').checked=true;$('#mPrompt').checked=true;$('input[name=lvl][value=insane]').checked=true;nameIn.value='TycoonDropper'}
+  if(k==='pvp'){setType('weapon');$('#mDamage').checked=true;$('input[name=lvl][value=insane]').checked=true;nameIn.value='ArenaSword'}
+  if(k==='shop'){setType('ui');$('#mData').checked=true;nameIn.value='ShopUI'}
+  gen.click()});
+gen.onclick=async()=>{
+  gen.disabled=true;ph.style.display='none';out.classList.remove('on');exp.classList.remove('on');ld.classList.add('on');
+  await new Promise(r=>setTimeout(r,380));
+  const type=getType(),lvl=getLvl(),col=getCol();
+  const raw=nameIn.value.trim()||fileName||'Generated';
+  const safe=raw.replace(/[^a-zA-Z0-9_]/g,'_').replace(/^(\d)/,'_$1')||'Item';
+  const desc=descIn.value.trim(),size=+sizeR.value;
+  const mods={neon:$('#mNeon').checked,anim:$('#mAnim').checked,fx:$('#mFX').checked,prompt:$('#mPrompt').checked,click:$('#mClick').checked,damage:$('#mDamage').checked,data:$('#mData').checked};
+  script=build(type,lvl,col,safe,raw,desc,size,mods);
+  out.textContent=script;out.classList.add('on');ld.classList.remove('on');exp.classList.add('on');gen.disabled=false;
+  lines.textContent=script.split('\n').length+'L';codeMeta.textContent=`luau · ${type} · ${lvl}`;bar.className='st ok';bar.textContent='✓ Prêt';
+};
+copy.onclick=()=>navigator.clipboard.writeText(script).then(()=>{const t=copy.textContent;copy.textContent='OK';setTimeout(()=>copy.textContent=t,1200)});
+dlLua.onclick=()=>{const s=(nameIn.value||fileName||'script').replace(/[^a-zA-Z0-9_]/g,'_');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([script],{type:'text/plain'}));a.download=s+'.lua';a.click()};
+dlRbxmx.onclick=()=>{const s=(nameIn.value||fileName||'Model').replace(/[^a-zA-Z0-9_]/g,'_');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rbxmx(s,script)],{type:'application/xml'}));a.download=s+'.rbxmx';a.click()};
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function rbxmx(name,src){return `<?xml version="1.0" encoding="utf-8"?>\n<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">\n\t<Item class="Model" referent="RBX0"><Properties><string name="Name">${esc(name)}</string></Properties>\n\t\t<Item class="Script" referent="RBX1"><Properties><string name="Name">${esc(name)}Script</string><ProtectedString name="Source"><![CDATA[${src}]]></ProtectedString><bool name="Enabled">true</bool></Properties></Item>\n\t</Item>\n</roblox>`}
+const COLORS={orange:{bc:'Bright orange',c3:'249,115,22'},blue:{bc:'Bright blue',c3:'56,189,248'},green:{bc:'Bright green',c3:'34,197,94'},red:{bc:'Really red',c3:'239,68,68'},purple:{bc:'Royal purple',c3:'167,139,250'}};
+function build(type,lvl,col,name,original,desc,size,m){
+  const C=COLORS[col]||COLORS.orange;const mat=m.neon?'Enum.Material.Neon':'Enum.Material.SmoothPlastic';
+  const head=`-- Ravex · ${original}\n-- ${typeLabel(type)} · ${lvl}${desc?' · '+desc:''}\n`;
+  if(type==='object')return head+`
+local TweenService=game:GetService("TweenService")
+local RunService=game:GetService("RunService")
+local model=Instance.new("Model") model.Name="${name}"
+local part=Instance.new("Part")
+part.Name="Main" part.Size=Vector3.new(${size},${size},${size}) part.Position=Vector3.new(0,${size/2+2},0)
+part.Anchored=true part.BrickColor=BrickColor.new("${C.bc}") part.Material=${mat} part.Parent=model
+${m.fx?`local att=Instance.new("Attachment") att.Parent=part
+local pe=Instance.new("ParticleEmitter") pe.Texture="rbxasset://textures/particles/sparkles_main.dds"
+pe.Rate=20 pe.Lifetime=NumberRange.new(0.6,1.4) pe.Speed=NumberRange.new(1,3) pe.Parent=att\n`:''}
+${m.prompt?`local prompt=Instance.new("ProximityPrompt") prompt.ActionText="Interagir" prompt.ObjectText="${original}" prompt.Parent=part
+prompt.Triggered:Connect(function(plr) print(plr.Name,"→ ${name}") ${m.data?`local ls=plr:FindFirstChild("leaderstats") if ls and ls:FindFirstChild("Coins") then ls.Coins.Value+=5 end`:''} end)\n`:''}
+${m.anim?`TweenService:Create(part,TweenInfo.new(3,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{Orientation=Vector3.new(0,180,0)}):Play()
+local y=part.Position.Y RunService.Heartbeat:Connect(function() part.Position=Vector3.new(part.Position.X,y+math.sin(tick()*1.8)*0.4,part.Position.Z) end)\n`:''}
+${m.damage?`part.Touched:Connect(function(hit) local h=hit.Parent and hit.Parent:FindFirstChildOfClass("Humanoid") if h then h:TakeDamage(10) end end)\n`:''}
+${m.data?`local function setup(plr) local ls=Instance.new("Folder") ls.Name="leaderstats" ls.Parent=plr local c=Instance.new("IntValue") c.Name="Coins" c.Value=0 c.Parent=ls end
+game:GetService("Players").PlayerAdded:Connect(setup) for _,p in ipairs(game:GetService("Players"):GetPlayers()) do setup(p) end\n`:''}
+model.Parent=workspace print("✅ ${name}")
+`;
+  if(type==='tool'||type==='weapon'){const dmg=type==='weapon'?(lvl==='insane'?35:20):0;return head+`
+local tool=Instance.new("Tool") tool.Name="${name}" tool.RequiresHandle=true tool.ToolTip="${original||name}"
+local handle=Instance.new("Part") handle.Name="Handle" handle.Size=Vector3.new(1,1,${Math.max(2,size*0.6)})
+handle.BrickColor=BrickColor.new("${C.bc}") handle.Material=${mat} handle.Parent=tool
+local db=false
+tool.Activated:Connect(function() if db then return end db=true
+${type==='weapon'&&m.damage?`local char=tool.Parent local root=char and char:FindFirstChild("HumanoidRootPart")
+if root then local params=OverlapParams.new() params.FilterDescendantsInstances={char} params.FilterType=Enum.RaycastFilterType.Exclude
+for _,p in ipairs(workspace:GetPartBoundsInRadius(root.Position+root.CFrame.LookVector*4,4,params)) do local h=p.Parent and p.Parent:FindFirstChildOfClass("Humanoid") if h then h:TakeDamage(${dmg}) end end end\n`:''}
+print("🛠️ ${name}") task.wait(0.4) db=false end)
+local lp=game:GetService("Players").LocalPlayer
+tool.Parent=lp and lp:WaitForChild("Backpack") or game:GetService("StarterPack")
+`}
+  if(type==='npc')return head+`
+local model=Instance.new("Model") model.Name="${name}"
+local root=Instance.new("Part") root.Name="HumanoidRootPart" root.Size=Vector3.new(2,2,1) root.Position=Vector3.new(0,3,0)
+root.BrickColor=BrickColor.new("${C.bc}") root.Material=${mat} root.Parent=model
+local head=Instance.new("Part") head.Name="Head" head.Shape=Enum.PartType.Ball head.Size=Vector3.new(1.3,1.3,1.3)
+head.Position=root.Position+Vector3.new(0,1.7,0) head.BrickColor=BrickColor.new("${C.bc}") head.Parent=model
+local w=Instance.new("WeldConstraint") w.Part0=root w.Part1=head w.Parent=root
+local hum=Instance.new("Humanoid") hum.MaxHealth=${lvl==='insane'?200:100} hum.Health=hum.MaxHealth hum.WalkSpeed=14 hum.Parent=model
+model.PrimaryPart=root
+task.spawn(function() while model.Parent do hum:MoveTo(Vector3.new(math.random(-25,25),0,math.random(-25,25))) task.wait(5) end end)
+model.Parent=workspace print("✅ NPC ${name}")
+`;
+  if(type==='ui')return head+`
+local player=game:GetService("Players").LocalPlayer
+local gui=Instance.new("ScreenGui") gui.Name="${name}UI" gui.ResetOnSpawn=false gui.Parent=player:WaitForChild("PlayerGui")
+local frame=Instance.new("Frame") frame.Size=UDim2.fromOffset(320,${m.data?240:170})
+frame.Position=UDim2.fromScale(0.5,0.5)-UDim2.fromOffset(160,${m.data?120:85})
+frame.BackgroundColor3=Color3.fromRGB(16,16,20) frame.BorderSizePixel=0 frame.Parent=gui
+Instance.new("UICorner",frame).CornerRadius=UDim.new(0,12)
+local st=Instance.new("UIStroke") st.Color=Color3.fromRGB(${C.c3}) st.Thickness=1.2 st.Parent=frame
+local title=Instance.new("TextLabel") title.Size=UDim2.new(1,-20,0,34) title.Position=UDim2.fromOffset(10,10)
+title.BackgroundTransparency=1 title.Text="${original||name}" title.TextColor3=Color3.fromRGB(${C.c3})
+title.Font=Enum.Font.GothamBold title.TextSize=18 title.TextXAlignment=Enum.TextXAlignment.Left title.Parent=frame
+local btn=Instance.new("TextButton") btn.Size=UDim2.fromOffset(120,34) btn.Position=UDim2.new(0.5,-60,1,-48)
+btn.BackgroundColor3=Color3.fromRGB(${C.c3}) btn.Text="Fermer" btn.TextColor3=Color3.new(1,1,1) btn.Font=Enum.Font.GothamBold btn.TextSize=14 btn.Parent=frame
+Instance.new("UICorner",btn).CornerRadius=UDim.new(0,8)
+btn.MouseButton1Click:Connect(function() gui:Destroy() end)
+`;
+  if(type==='vehicle')return head+`
+local model=Instance.new("Model") model.Name="${name}"
+local body=Instance.new("Part") body.Name="Body" body.Size=Vector3.new(${size*1.5},${size*.45},${size*2.2}) body.Position=Vector3.new(0,3,0)
+body.BrickColor=BrickColor.new("${C.bc}") body.Material=${mat} body.Parent=model
+local seat=Instance.new("VehicleSeat") seat.Name="DriveSeat" seat.Size=Vector3.new(2,1,2)
+seat.Position=body.Position+Vector3.new(0,1.2,0.5) seat.MaxSpeed=${lvl==='insane'?80:45} seat.Parent=model
+local w=Instance.new("WeldConstraint") w.Part0=body w.Part1=seat w.Parent=body
+model.PrimaryPart=body model.Parent=workspace print("✅ Vehicle ${name}")
+`;
+  if(type==='pet')return head+`
+local Players=game:GetService("Players") local RunService=game:GetService("RunService")
+local player=Players.LocalPlayer or Players:GetPlayers()[1]
+local char=player.Character or player.CharacterAdded:Wait() local hrp=char:WaitForChild("HumanoidRootPart")
+local pet=Instance.new("Part") pet.Name="${name}" pet.Size=Vector3.new(${size*.4},${size*.4},${size*.4})
+pet.BrickColor=BrickColor.new("${C.bc}") pet.Material=${mat} pet.CanCollide=false pet.Parent=workspace
+local bp=Instance.new("BodyPosition") bp.MaxForce=Vector3.new(1e5,1e5,1e5) bp.P=8000 bp.Parent=pet
+local bg=Instance.new("BodyGyro") bg.MaxTorque=Vector3.new(1e5,1e5,1e5) bg.P=4000 bg.Parent=pet
+local angle=0
+RunService.Heartbeat:Connect(function(dt) if not hrp.Parent then return end angle+=dt*1.2
+local off=Vector3.new(math.cos(angle)*4,2,math.sin(angle)*4) bp.Position=hrp.Position+off bg.CFrame=CFrame.lookAt(pet.Position,hrp.Position) end)
+print("✅ Pet ${name}")
+`;
+  if(type==='door')return head+`
+local TweenService=game:GetService("TweenService")
+local model=Instance.new("Model") model.Name="${name}"
+local door=Instance.new("Part") door.Name="Door" door.Size=Vector3.new(${size*.3},${size*2},${size}) door.Position=Vector3.new(0,${size},0)
+door.Anchored=true door.BrickColor=BrickColor.new("${C.bc}") door.Material=${mat} door.Parent=model
+local open=false local closed=door.CFrame local opened=closed*CFrame.new(${size},0,0)
+local pr=Instance.new("ProximityPrompt") pr.ActionText="Ouvrir/Fermer" pr.Parent=door
+pr.Triggered:Connect(function() open=not open TweenService:Create(door,TweenInfo.new(0.4),{CFrame=open and opened or closed}):Play() end)
+model.Parent=workspace print("✅ Door ${name}")
+`;
+  return build('object',lvl,col,name,original,desc,size,m);
+}
+</script>
+</body>
+</html>
